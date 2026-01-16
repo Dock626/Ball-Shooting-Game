@@ -8,7 +8,9 @@ class Projectile {
 public:
     Vector2 position;
 
-    float LifeSpan = 3;
+    bool Disabled { false };
+
+    float LifeSpan{ 3 };
 
     Projectile(float x, float y) {
         position = { x, y };
@@ -54,7 +56,7 @@ public:
         if (IsKeyDown(KEY_UP)) ballPosition.y -= 4.0f;
         if (IsKeyDown(KEY_DOWN)) ballPosition.y += 4.0f;
         if (IsKeyPressed(KEY_Z)) ShootProjectile(ballPosition.x, ballPosition.y);
-        std::erase_if(bullets, [](Projectile p) {return p.LifeSpan <= 0;});
+        std::erase_if(bullets, [](Projectile p) {return p.LifeSpan <= 0 or p.Disabled;});
         for (int i = 0; i < bullets.size(); i++)
         {
             bullets[i].position.x += 7.5f;
@@ -157,8 +159,9 @@ int main(void)
 
         for (auto& enemy : spawn.GetSpawnedObjects()){
             for (auto& bullet : Player.GetBullets()) {
-                if (CheckCollisionCircleRec(enemy.Position(), enemy.GetRadius(), bullet.GetRect())) {
-                    std::cout << "Collision";
+                if (not bullet.Disabled and CheckCollisionCircleRec(enemy.Position(), enemy.GetRadius(), bullet.GetRect())) {
+                    bullet.Disabled = true;
+                    std::cout << "Collision \n";
                 }
             }
         }
