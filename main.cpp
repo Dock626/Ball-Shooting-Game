@@ -2,6 +2,7 @@
 #include <vector>
 #include "raylib.h"
 class Spawner;
+class Enemy;
 
 class Projectile {
 public:
@@ -13,13 +14,17 @@ public:
         position = { x, y };
     };
 
+    Rectangle GetRect() {
+        return{ position.x, position.y, 10.0f, 5.0f };
+    }
+    
     void Update(float delta) {
         LifeSpan -= delta;
         position.x += 5.0f;
     };
 
     void Draw() {
-        DrawRectangleV({ position.x, position.y }, { 10.0f, 5.0f }, RED);
+        DrawRectangleRec(this->GetRect(), RED);
     }
         
 };
@@ -38,6 +43,10 @@ public:
     CreatePlayer(float x, float  y) {
         ballPosition = { (x/2) - 225, y / 2};
     };
+
+    auto& GetBullets() {
+        return bullets;
+    }
 
     void Update(float delta) {
         if (IsKeyDown(KEY_RIGHT)) ballPosition.x += 4.0f;
@@ -73,13 +82,15 @@ public:
         Position_ = { x, y };
     };
 
+    float GetRadius() const {
+        return 25.0f;
+    }
 
     void Update(float delta) {
         Position_.x -= 5.0f;
-        std::cout << "testing";
     }
     void Draw() {
-        DrawCircleV(Position_, 25, RED);
+        DrawCircleV(Position_, GetRadius(), RED);
     }
     auto Position() {
         return Position_;
@@ -108,7 +119,7 @@ public:
             Timer -= 5.0f;
             Spawn();
         };
-        std::erase_if(SpawnedObjects_, [](Enemy p) {return p.Position().x <= 0; });
+        std::erase_if(SpawnedObjects_, [](Enemy& p) {return p.Position().x <= 0; });
     }
 
     auto& GetSpawnedObjects() {
@@ -143,6 +154,15 @@ int main(void)
         {
             enemy.Update(delta);
         }
+
+        for (auto& enemy : spawn.GetSpawnedObjects()){
+            for (auto& bullet : Player.GetBullets()) {
+                if (CheckCollisionCircleRec(enemy.Position(), enemy.GetRadius(), bullet.GetRect())) {
+                    std::cout << "Collision";
+                }
+            }
+        }
+
         //----------------------------------------------------------------------------------
         // Draw
         //----------------------------------------------------------------------------------
