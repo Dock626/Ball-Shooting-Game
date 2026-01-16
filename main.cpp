@@ -43,7 +43,7 @@ private:
     
 public:
     CreatePlayer(float x, float  y) {
-        ballPosition = { (x/2) - 225, y / 2};
+        ballPosition = { x, y };
     };
 
     auto& GetBullets() {
@@ -56,7 +56,7 @@ public:
         if (IsKeyDown(KEY_UP)) ballPosition.y -= 4.0f;
         if (IsKeyDown(KEY_DOWN)) ballPosition.y += 4.0f;
         if (IsKeyPressed(KEY_Z)) ShootProjectile(ballPosition.x, ballPosition.y);
-        std::erase_if(bullets, [](Projectile p) {return p.LifeSpan <= 0 or p.Disabled;});
+        std::erase_if(bullets, [](Projectile& p) {return p.LifeSpan <= 0 or p.Disabled;});
         for (int i = 0; i < bullets.size(); i++)
         {
             bullets[i].position.x += 7.5f;
@@ -79,8 +79,11 @@ private:
     Vector2 Position_;
 
 public:
+
+    bool Alive{ true };
+
     Enemy(float x) {
-        float y = GetRandomValue(0, x);
+        float y = GetRandomValue(0, 450);
         Position_ = { x, y };
     };
 
@@ -121,7 +124,7 @@ public:
             Timer -= 5.0f;
             Spawn();
         };
-        std::erase_if(SpawnedObjects_, [](Enemy& p) {return p.Position().x <= 0; });
+        std::erase_if(SpawnedObjects_, [](Enemy& p) {return p.Position().x <= 0 or !p.Alive; });
     }
 
     auto& GetSpawnedObjects() {
@@ -140,7 +143,7 @@ int main(void)
     const int screenHeight = 450;
     
     InitWindow(screenWidth, screenHeight, "raylib [core] example - input keys");
-    CreatePlayer Player{ screenWidth, screenHeight };
+    CreatePlayer Player{ (screenWidth / 2) - 225, screenHeight / 2 };
     Spawner spawn{};
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
@@ -157,10 +160,13 @@ int main(void)
             enemy.Update(delta);
         }
 
-        for (auto& enemy : spawn.GetSpawnedObjects()){
+        for (auto& enemy : spawn.GetSpawnedObjects()) {
+            if (not enemy.Alive){continue;}
+
             for (auto& bullet : Player.GetBullets()) {
                 if (not bullet.Disabled and CheckCollisionCircleRec(enemy.Position(), enemy.GetRadius(), bullet.GetRect())) {
                     bullet.Disabled = true;
+                    enemy.Alive = false;
                     std::cout << "Collision \n";
                 }
             }
