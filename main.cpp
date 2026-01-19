@@ -50,6 +50,9 @@ private:
     }
     
 public:
+
+    int Score = 0;
+
     CreatePlayer(float x, float  y, int z) {
         
         ballPosition = { x, y };
@@ -81,6 +84,7 @@ public:
 
     void Reset() {
         Alive = true;
+        Score = 0;
         ballPosition = ballStartPosition;
         ballRadius = ballStartRadius;
     }
@@ -155,8 +159,8 @@ public:
 
     void Update(float delta) {
         Timer += delta;
-        if (Timer >= 5.0f) {
-            Timer -= 5.0f;
+        if (Timer >= 3.0f) {
+            Timer -= 3.0f;
             Spawn();
         };
         std::erase_if(SpawnedObjects_, [](Enemy& p) {return p.Position().x <= 0 or !p.Alive; });
@@ -181,7 +185,6 @@ int main(void)
     InitWindow(screenWidth, screenHeight, "raylib [core] example - input keys");
     CreatePlayer Player{ (screenWidth / 2) - 225, screenHeight / 2, 25 };
     Spawner spawn{};
-    int Score = 0;
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
@@ -209,7 +212,7 @@ int main(void)
                     if (not bullet.Disabled and CheckCollisionCircleRec(enemy.Position(), enemy.GetRadius(), bullet.GetRect())) {
                         bullet.Disabled = true;
                         enemy.Alive = false;
-                        Score += 1;
+                        Player.Score += 1;
                     }
                 }
         }
@@ -222,11 +225,11 @@ int main(void)
         ClearBackground(RAYWHITE);
         if (Player.Status() == false) {
             DrawText("You died! Press R to start over.", 10, 10, 20, RED);
-            DrawText(TextFormat("Your score: %d", Score), screenWidth / 2 - 175, screenHeight / 2 - 50, 50, DARKGRAY);
+            DrawText(TextFormat("Your score: %d", Player.Score), screenWidth / 2 - 175, screenHeight / 2 - 50, 50, DARKGRAY);
         }
         else {
             DrawText("move the ball with arrow keys, shoot with z", 10, 10, 20, DARKGRAY);
-            DrawText(TextFormat("Your score: %d", Score), 10, 30, 20, DARKBLUE);
+            DrawText(TextFormat("Your score: %d", Player.Score), 10, 30, 20, DARKBLUE);
         }
         
 
