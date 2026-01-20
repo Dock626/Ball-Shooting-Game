@@ -7,7 +7,7 @@ project(
         LANGUAGES C CXX
 )
 
-add_executable(example main.cpp)
+add_executable(example main.cpp "CreatePlayer.h" "CreatePlayer.cpp" "Projectile.h" "Projectile.cpp" "Enemy.h" "Enemy.cpp" "Spawner.h" "Spawner.cpp")
 
 target_compile_features(example PUBLIC cxx_std_23)
 
