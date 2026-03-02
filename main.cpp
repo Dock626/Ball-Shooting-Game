@@ -10,39 +10,47 @@
 //------------------------------------------------------------------------------------
 int main(void)
 {
+
     // Initialization
     //--------------------------------------------------------------------------------------
     const int screenWidth = 800;
     const int screenHeight = 450;
-    
+    bool paused = false;
     InitWindow(screenWidth, screenHeight, "raylib [core] example - input keys");
     CreatePlayer Player{ (screenWidth / 2) - 225, screenHeight / 2, 25 };
     Spawner spawn{};
+    
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
+        if (IsKeyPressed(KEY_P))
+            paused = !paused;
         float delta = GetFrameTime();
+        //----------------------------------------------------------------------------------
+        // Updates
+        //----------------------------------------------------------------------------------
+        if (!paused){
 
-        Player.Update(delta);
-        if (Player.Status() == true) {
-            spawn.Update(delta);
-        }
-        
-        for (auto& enemy : spawn.GetSpawnedObjects())
-        {
-            enemy.Update(delta);
-        }
+            Player.Update(delta);
+            if (Player.Status() == true) {
+                spawn.Update(delta);
+            }
 
-        for (auto& enemy : spawn.GetSpawnedObjects()) {
-            if (not enemy.Alive) { continue; }
-            if (CheckCollisionCircles(Player.GetPosition(), Player.GetRadius(), enemy.Position(), enemy.GetRadius())) {
-                Player.Die();
-                enemy.Alive = false;
-                break;
-            };
+            for (auto& enemy : spawn.GetSpawnedObjects())
+            {
+                enemy.Update(delta);
+            }
+
+            for (auto& enemy : spawn.GetSpawnedObjects()) {
+                if (not enemy.Alive) { continue; }
+                if (CheckCollisionCircles(Player.GetPosition(), Player.GetRadius(), enemy.Position(), enemy.GetRadius())) {
+                    Player.Die();
+                    enemy.Alive = false;
+                    break;
+                };
 
                 for (auto& bullet : Player.GetBullets()) {
                     if (not bullet.Disabled and CheckCollisionCircleRec(enemy.Position(), enemy.GetRadius(), bullet.GetRect())) {
@@ -51,6 +59,7 @@ int main(void)
                         Player.Score += 1;
                     }
                 }
+            }
         }
 
         //----------------------------------------------------------------------------------
